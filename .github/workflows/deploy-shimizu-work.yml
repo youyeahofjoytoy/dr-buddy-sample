@@ -1,0 +1,62 @@
+name: Deploy Shimizu Work to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "shimizu-work-payload/**"
+      - ".github/workflows/deploy-shimizu-work.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Build static site
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf site
+          mkdir -p site/shimizu-work
+
+          # Keep existing top-level public sample files available.
+          find . -maxdepth 1 -type f -exec cp {} site/ \;
+
+          # Rebuild the single-file Shimizu Work app.
+          cat shimizu-work-payload/part-*.txt \
+            | tr -d '\r\n' \
+            | base64 --decode \
+            | gzip --decompress \
+            > site/shimizu-work/index.html
+
+          touch site/.nojekyll
+          test -s site/shimizu-work/index.html
+          grep -q "しみずWORK" site/shimizu-work/index.html
+          chmod -R a+rX site
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
