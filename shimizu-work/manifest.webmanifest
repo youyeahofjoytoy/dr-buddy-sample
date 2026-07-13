@@ -1,0 +1,11 @@
+{
+  "name": "しみずWORK — 話すだけで仕事になる",
+  "short_name": "しみずWORK",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f7f4",
+  "theme_color": "#173f34",
+  "description": "話すだけで、アイデアを要件・タスク・担当・確認事項に変える仕事整理アプリ"
+}
